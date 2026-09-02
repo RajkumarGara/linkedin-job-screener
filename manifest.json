@@ -3,6 +3,12 @@
   "name": "LinkedIn Job Screening",
   "version": "1.0.0",
   "description": "Shows a simple red, yellow, or green status dot on LinkedIn job pages.",
+  "web_accessible_resources": [
+    {
+      "resources": ["screening-rules.json"],
+      "matches": ["https://www.linkedin.com/*"]
+    }
+  ],
   "content_scripts": [
     {
       "matches": ["https://www.linkedin.com/jobs/*"],
