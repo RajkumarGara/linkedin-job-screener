@@ -145,13 +145,35 @@
     if (containerText) return containerText;
 
     const bodyText = (document.body?.innerText || "").replace(/\s+/g, " ").trim();
-    return bodyText.length > 80 ? bodyText : "";
+    return bodyText.length > 120 ? bodyText : "";
+  }
+
+  function normalizeText(value) {
+    return (value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(word => {
+        if (word.length <= 3) return word;
+        if (word.endsWith("ies") && word.length > 4) return word.slice(0, -3) + "y";
+        if (word.endsWith("sses")) return word.slice(0, -2);
+        if (word.endsWith("es") && !word.endsWith("se")) return word.slice(0, -2);
+        if (word.endsWith("s") && !word.endsWith("ss")) return word.slice(0, -1);
+        return word;
+      })
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   function findMatches(text, rules) {
-    return rules.filter(rule =>
-      text.toLowerCase().includes(rule.toLowerCase())
-    );
+    const normalizedText = normalizeText(text);
+
+    return rules.filter(rule => {
+      const normalizedRule = normalizeText(rule);
+      return !normalizedRule || normalizedText.includes(normalizedRule);
+    });
   }
 
   function analyze(text) {
@@ -230,7 +252,7 @@
     panel.innerHTML = found || `<div class="lj-none">${
       getJobDetailContainer()
         ? "Nothing found"
-        : "Open a job to scan its details"
+        : "Apply to this role and open another role to scan its details"
     }</div>`;
   }
 
@@ -258,7 +280,7 @@
     const { dot } = ensureUI();
     dot.dataset.scanning = "true";
     dot.title = "Scanning…";
-    timer = setTimeout(update, 450);
+    timer = setTimeout(update, 350);
   }
 
   document.addEventListener("click", event => {
