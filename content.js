@@ -1,71 +1,25 @@
 (() => {
-  // Job screening rules. Matching is case-insensitive.
+  // Job screening rules loaded from screening-rules.json. Matching is case-insensitive.
 
-  const RED_RULES = [
-    // Security clearance
-    "security clearance",
-    "clearance required",
-    "active secret clearance",
-    "active top secret clearance",
-    "secret clearance",
-    "top secret clearance",
-    "TS/SCI",
-    "TS-SCI",
-    "SCI clearance",
-    "DoD clearance",
-    "Department of Defense",
+  let RULES = { red: [], yellow: [], green: [] };
 
-    // Citizenship
-    "must be a US citizen",
-    "must be a U.S. citizen",
-    "US citizenship required",
-    "U.S. citizenship required",
-    "citizenship requirement",
-
-    // No sponsorship
-    "will not sponsor",
-    "won't sponsor",
-    "no sponsorship",
-    "unable to sponsor",
-    "not able to sponsor",
-    "visa sponsorship is not available",
-    "sponsorship is not available",
-    "without sponsorship"
-  ];
-
-  const YELLOW_RULES = [
-    // Work authorization / immigration
-    "work authorization",
-    "authorized to work",
-    "legally authorized to work",
-    "employment authorization",
-    "visa",
-    "sponsorship",
-    "immigration",
-    "government",
-
-    // Consultancy / staffing
-    "consulting",
-    "consultancy",
-    "consultant",
-    "staffing",
-    "staffing agency",
-    "staffing & recruiting",
-    "staffing and recruiting",
-    "recruiting agency",
-    "recruitment agency",
-    "contract staffing",
-    "professional services"
-  ];
-
-  const GREEN_RULES = [
-    "visa sponsorship is available",
-    "sponsorship is available",
-    "will sponsor",
-    "H-1B sponsorship",
-    "H1B sponsorship",
-    "H-1B visa sponsorship"
-  ];
+  async function loadRules() {
+    try {
+      const response = await fetch(chrome.runtime.getURL("screening-rules.json"));
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      RULES = {
+        red: Array.isArray(data.red) ? data.red : [],
+        yellow: Array.isArray(data.yellow) ? data.yellow : [],
+        green: Array.isArray(data.green) ? data.green : []
+      };
+      update();
+    } catch (error) {
+      console.error("LinkedIn Job Screener: failed to load screening-rules.json", error);
+      RULES = { red: [], yellow: [], green: [] };
+      update();
+    }
+  }
 
   let lastUrl = location.href;
   let timer;
@@ -184,9 +138,14 @@
 
   function getJobDetailText() {
     const container = getJobDetailContainer();
-    return container
+    const containerText = container
       ? (container.innerText || "").replace(/\s+/g, " ").trim()
       : "";
+
+    if (containerText) return containerText;
+
+    const bodyText = (document.body?.innerText || "").replace(/\s+/g, " ").trim();
+    return bodyText.length > 80 ? bodyText : "";
   }
 
   function findMatches(text, rules) {
@@ -196,9 +155,9 @@
   }
 
   function analyze(text) {
-    const red = findMatches(text, RED_RULES);
-    const yellow = findMatches(text, YELLOW_RULES);
-    const green = findMatches(text, GREEN_RULES);
+    const red = findMatches(text, RULES.red);
+    const yellow = findMatches(text, RULES.yellow);
+    const green = findMatches(text, RULES.green);
 
     lastMatches = { red, yellow, green };
 
@@ -316,7 +275,7 @@
     }
   }, true);
 
-  update();
+  loadRules();
 
   const observer = new MutationObserver(scheduleUpdate);
   observer.observe(document.body, {

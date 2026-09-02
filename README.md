@@ -29,10 +29,11 @@ Clicking the status dot opens a floating panel detailing the exact keyword rules
 ## 📁 Repository Structure
 
 ```text
-├── manifest.json   # Chrome Extension Manifest V3 configuration
-├── content.js      # Core logic for DOM parsing, keyword matching, and UI rendering
-├── style.css       # Styles for the status dot and detailed overlay panel
-└── README.md       # Project documentation
+├── manifest.json         # Chrome Extension Manifest V3 configuration
+├── content.js            # Core logic for DOM parsing, keyword matching, and UI rendering
+├── screening-rules.json  # Red, yellow, and green screening keyword lists
+├── style.css             # Styles for the status dot and detailed overlay panel
+└── README.md             # Project documentation
 ```
 
 ---
@@ -54,10 +55,9 @@ Since this extension runs entirely locally, install it in Chrome via Developer M
 
 You can easily adjust or expand the search rules to fit your personal job hunt constraints:
 
-1. Open `content.js` in your code editor.
-2. Locate `RED_RULES`, `YELLOW_RULES`, or `GREEN_RULES` near the top of the file.
-3. Add, remove, or modify any string entries (matching is case-insensitive).
-4. Go to `chrome://extensions` and click the **Reload (↻)** button on the extension card to apply your changes.
+1. Open [screening-rules.json](screening-rules.json) in your code editor.
+2. Edit the `red`, `yellow`, or `green` arrays with any phrase entries you want to match (matching is case-insensitive).
+3. Go to `chrome://extensions` and click the **Reload (↻)** button on the extension card to apply your changes.
 
 ---
 
